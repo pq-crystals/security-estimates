@@ -42,8 +42,8 @@ q = 8380417
 # UnifWeakDilithium           = UniformDilithiumParameterSet(n, 3, 2, gamma, q, 7, pkdrop=14)
 
 UnifMediumDilithium         = UniformDilithiumParameterSet(n, 4, 4, 2**17, (q-1)/88, 39, q, 2, pkdrop=13)
-UnifRecommendedDilithium    = UniformDilithiumParameterSet(n, 6, 5, 2**19, (q-1)/32, 49, q, 5, pkdrop=13)
-UnifVeryHighDilithium       = UniformDilithiumParameterSet(n, 8, 7, 2**19, (q-1)/32, 60, q, 3, pkdrop=13)
+UnifRecommendedDilithium    = UniformDilithiumParameterSet(n, 6, 5, 2**19, (q-1)/32, 49, q, 4, pkdrop=13)
+UnifVeryHighDilithium       = UniformDilithiumParameterSet(n, 8, 7, 2**19, (q-1)/32, 60, q, 2, pkdrop=13)
 
 
 all_params_unif = [#("Uniform Dilithium Weak", UnifWeakDilithium),
@@ -77,11 +77,13 @@ for (scheme, param) in all_params_unif:
     print("\n"+scheme)
     print(param.__dict__)
     print("")
+    print("=== WEAK UF")
     v = MSIS_summarize_attacks(Dilithium_to_MSIS(param))
-    print("STRONG UF")
+    print("=== STRONG UF")
     v = MSIS_summarize_attacks(Dilithium_to_MSIS(param, strong_uf=True))
     for i in range(4):
         table_SIS[i][j] = v[i]
+    print("=== SECRET KEY RECOVERY")
     v = MLWE_summarize_attacks(Dilithium_to_MLWE(param))
     for i in range(4):
         table_LWE[i][j] = v[i]

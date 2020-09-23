@@ -61,7 +61,7 @@ if __name__ == "__main__":
     print ("Kyber512 (light):")
     print ("--------------------")
     print ("security:")
-    #MLWE_summarize_attacks(Kyber_to_MLWE(ps_light))
+    MLWE_summarize_attacks(Kyber_to_MLWE(ps_light))
     summarize(ps_light)
     print ()
 

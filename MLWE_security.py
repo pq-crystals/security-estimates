@@ -3,7 +3,7 @@ from model_BKZ import *
 
 log_infinity = 9999
 
-STEPS_b = 5
+STEPS_b = 1
 STEPS_m = 5
 
 
