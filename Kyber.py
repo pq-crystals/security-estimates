@@ -22,14 +22,12 @@ def Kyber_to_MLWE(kps):
     if kps.ks != kps.ke:
         raise "The security script does not handle different error parameter in secrets and errors (ks != ke) "
 
-    # Check wether ciphertext error variance after rounding is larger than secret key error variance
+    # Check whether ciphertext error variance after rounding is larger than secret key error variance
     Rc = build_mod_switching_error_law(kps.q, kps.rqc)
     var_rounding = sum([i*i*Rc[i] for i in Rc.keys()])
-    
 
     if kps.ke_ct/2. + var_rounding < kps.ke/2.:
         raise "The security of the ciphertext MLWE may not be stronger than the one of the public key MLWE"    
-
 
     return MLWEParameterSet(kps.n, kps.m, kps.m + 1, kps.ks, kps.q)
 
