@@ -4,7 +4,7 @@ from proba_util import gaussian_center_weight
 
 log_infinity = 9999
 
-STEPS_b = 5
+STEPS_b = 1
 STEPS_m = 5
 
 
@@ -64,7 +64,7 @@ def SIS_optimize_attack(q, max_w, h, B, cost_attack=SIS_linf_cost, cost_svp=svp_
     """
     best_cost = log_infinity
 
-    for b in range(50, max_w, 5):
+    for b in range(50, max_w, STEPS_b):
         if cost_svp(b) > best_cost:
             break
         for w in [max_w]:    # No need to exhaust w here as the attack will auto-adjust anyway  range(max(h+1, b+1), max_w, STEPS_m):

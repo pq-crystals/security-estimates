@@ -9,13 +9,14 @@ def p2_cyclotomic_final_error_distribution(ps):
     :param ps: parameter set (ParameterSet)
     """
     chis = build_centered_binomial_law(ps.ks)           # LWE error law for the key
-    chie = build_centered_binomial_law(ps.ke)           # LWE error law for the ciphertext
+    chie = build_centered_binomial_law(ps.ke_ct)        # LWE error law for the ciphertext
+    chie_pk = build_centered_binomial_law(ps.ke)
     Rk = build_mod_switching_error_law(ps.q, ps.rqk)    # Rounding error public key
     Rc = build_mod_switching_error_law(ps.q, ps.rqc)    # rounding error first ciphertext
     chiRs = law_convolution(chis, Rk)                   # LWE+Rounding error key
     chiRe = law_convolution(chie, Rc)                   # LWE + rounding error ciphertext
 
-    B1 = law_product(chie, chiRs)                       # (LWE+Rounding error) * LWE (as in a E*S product)
+    B1 = law_product(chie_pk, chiRs)                       # (LWE+Rounding error) * LWE (as in a E*S product)
     B2 = law_product(chis, chiRe)
 
     C1 = iter_law_convolution(B1, ps.m * ps.n)

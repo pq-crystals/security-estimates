@@ -4,45 +4,49 @@ from math import sqrt
 
 
 class UniformDilithiumParameterSet(object):
-    def __init__(self, n, k, l, gamma, q, eta, pkdrop=0):
+    def __init__(self, n, k, l, gamma1, gamma2, tau, q, eta, pkdrop=0):
         self.n = n
         self.k = k
         self.l = l
-        self.gamma = gamma
+        self.gamma1 = gamma1
+        self.gamma2 = gamma2
         self.q = q
         self.eta = eta
-        self.B = max(2*gamma, 2**(pkdrop+1))
+        # SIS l_oo bound for unforgeability
+        self.zeta = max(gamma1, 2*gamma2 + 1 + 2**(pkdrop-1)*tau)                # Define in section 6.2
+        # SIS l_oo bound for strong unforgeability
+        self.zeta_prime = max(2*gamma1, 4*gamma2 + 1)                # Define in section 6.2
         self.pkdrop = pkdrop
 
 
-class GaussianDilithiumParameterSet(object):
-    def __init__(self, n, k, l, sigma, q, eta, pkdrop=0):
-        self.n = n
-        self.k = k
-        self.l = l
-        self.sigma = sigma
-        self.q = q
-        self.eta = eta
-        self.pkdrop = pkdrop
-        self.B = 2*equation5(self)
+# class GaussianDilithiumParameterSet(object):
+#     def __init__(self, n, k, l, sigma, q, eta, pkdrop=0):
+#         self.n = n
+#         self.k = k
+#         self.l = l
+#         self.sigma = sigma
+#         self.q = q
+#         self.eta = eta
+#         self.pkdrop = pkdrop
+#         self.B = 2*equation5(self)
 
 
-def equation5(dps):
-    B2 = ((1.05 * dps.sigma * sqrt((dps.k + dps.l)*dps.n))**2 
-          +(2**(dps.pkdrop-1) * sqrt(60*dps.n*dps.k))**2)
-    return sqrt(B2)
+# def equation5(dps):
+#     B2 = ((1.05 * dps.sigma * sqrt((dps.k + dps.l)*dps.n))**2 
+#           +(2**(dps.pkdrop-1) * sqrt(60*dps.n*dps.k))**2)
+#     return sqrt(B2)
 
 n = 256
 q = 8380417
-gamma = (q-1)/16
 
-UnifWeakDilithium           = UniformDilithiumParameterSet(n, 3, 2, gamma, q, 7, pkdrop=14)
-UnifMediumDilithium         = UniformDilithiumParameterSet(n, 4, 3, gamma, q, 6, pkdrop=14)
-UnifRecommendedDilithium    = UniformDilithiumParameterSet(n, 5, 4, gamma, q, 5, pkdrop=14)
-UnifVeryHighDilithium       = UniformDilithiumParameterSet(n, 6, 5, gamma, q, 3, pkdrop=14)
+# UnifWeakDilithium           = UniformDilithiumParameterSet(n, 3, 2, gamma, q, 7, pkdrop=14)
+
+UnifMediumDilithium         = UniformDilithiumParameterSet(n, 4, 4, 2**17, (q-1)/88, 39, q, 2, pkdrop=13)
+UnifRecommendedDilithium    = UniformDilithiumParameterSet(n, 6, 5, 2**19, (q-1)/32, 49, q, 4, pkdrop=13)
+UnifVeryHighDilithium       = UniformDilithiumParameterSet(n, 8, 7, 2**19, (q-1)/32, 60, q, 2, pkdrop=13)
 
 
-all_params_unif = [("Uniform Dilithium Weak", UnifWeakDilithium),
+all_params_unif = [#("Uniform Dilithium Weak", UnifWeakDilithium),
                    ("Uniform Dilithium Medium", UnifMediumDilithium),
                    ("Uniform Dilithium Recommended", UnifRecommendedDilithium),
                    ("Uniform Dilithium Very High", UnifVeryHighDilithium)]
@@ -50,13 +54,11 @@ all_params_unif = [("Uniform Dilithium Weak", UnifWeakDilithium),
 all_params = all_params_unif
 
 
-def Dilithium_to_MSIS(dps):
-    if type(dps)==UniformDilithiumParameterSet:
-        return MSISParameterSet(dps.n, dps.k + dps.l + 1, dps.k, dps.B, dps.q, norm="linf")
-    if type(dps)==GaussianDilithiumParameterSet:
-        return MSISParameterSet(dps.n, dps.k + dps.l + 1, dps.k, dps.B, dps.q, norm="l2")
+def Dilithium_to_MSIS(dps, strong_uf = False):
+    if strong_uf:
+        return MSISParameterSet(dps.n, dps.k + dps.l + 1, dps.k, dps.zeta_prime, dps.q, norm="linf")
     else:
-        raise ValueError("Unrecognized Dilithium Parameter Type")
+        return MSISParameterSet(dps.n, dps.k + dps.l + 1, dps.k, dps.zeta, dps.q, norm="linf")
 
 
 def Dilithium_to_MLWE(dps):
@@ -75,9 +77,13 @@ for (scheme, param) in all_params_unif:
     print("\n"+scheme)
     print(param.__dict__)
     print("")
+    print("=== WEAK UF")
     v = MSIS_summarize_attacks(Dilithium_to_MSIS(param))
+    print("=== STRONG UF")
+    v = MSIS_summarize_attacks(Dilithium_to_MSIS(param, strong_uf=True))
     for i in range(4):
         table_SIS[i][j] = v[i]
+    print("=== SECRET KEY RECOVERY")
     v = MLWE_summarize_attacks(Dilithium_to_MLWE(param))
     for i in range(4):
         table_LWE[i][j] = v[i]
